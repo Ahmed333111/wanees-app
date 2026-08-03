@@ -32,6 +32,48 @@
 
   <title>ونيس</title>
   <link rel="manifest" href="manifest.json">
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <script>
+    // Cloudflare Turnstile lives outside the Flutter canvas: it floats above
+    // it only when a challenge is actually required (interaction-only), so
+    // the signup screen keeps its layout and real people never see it.
+    window.wanees = window.wanees || {};
+    window.wanees.captchaToken = function (siteKey) {
+      return new Promise(function (resolve) {
+        var waited = 0;
+        (function ready() {
+          if (window.turnstile) return run();
+          if ((waited += 100) > 8000) return resolve(null);
+          setTimeout(ready, 100);
+        })();
+
+        function run() {
+          var host = document.getElementById('wanees-turnstile');
+          if (!host) {
+            host = document.createElement('div');
+            host.id = 'wanees-turnstile';
+            host.style.cssText =
+              'position:fixed;left:50%;transform:translateX(-50%);' +
+              'bottom:24px;z-index:9999;';
+            document.body.appendChild(host);
+          }
+          host.innerHTML = '';
+          var done = false;
+          var finish = function (t) { if (!done) { done = true; resolve(t); } };
+          try {
+            window.turnstile.render(host, {
+              sitekey: siteKey,
+              appearance: 'interaction-only',
+              callback: finish,
+              'error-callback': function () { finish(null); },
+              'timeout-callback': function () { finish(null); },
+            });
+          } catch (e) { finish(null); }
+          setTimeout(function () { finish(null); }, 60000);
+        }
+      });
+    };
+  </script>
 </head>
 <body>
   <!--
