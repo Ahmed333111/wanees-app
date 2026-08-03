@@ -24,7 +24,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ونيس">
-  <meta name="theme-color" content="#F7F5FB">
+  <meta name="theme-color" content="#EAEAEF" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0F0F12" media="(prefers-color-scheme: dark)">
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
@@ -48,14 +49,24 @@
         })();
 
         function run() {
+          // Centred over a scrim: when a challenge does appear it is
+          // unmistakably the thing to deal with, and it never sits on top
+          // of the signup button docked at the bottom.
+          var scrim = document.getElementById('wanees-turnstile-scrim');
+          if (!scrim) {
+            scrim = document.createElement('div');
+            scrim.id = 'wanees-turnstile-scrim';
+            scrim.style.cssText =
+              'position:fixed;inset:0;z-index:9999;display:flex;' +
+              'align-items:center;justify-content:center;' +
+              'background:rgba(0,0,0,0.45);';
+            document.body.appendChild(scrim);
+          }
           var host = document.getElementById('wanees-turnstile');
           if (!host) {
             host = document.createElement('div');
             host.id = 'wanees-turnstile';
-            host.style.cssText =
-              'position:fixed;left:50%;transform:translateX(-50%);' +
-              'bottom:24px;z-index:9999;';
-            document.body.appendChild(host);
+            scrim.appendChild(host);
           }
           host.innerHTML = '';
           var done = false;
@@ -67,6 +78,7 @@
             done = true;
             try { if (widgetId !== null) window.turnstile.remove(widgetId); } catch (e) {}
             try { host.remove(); } catch (e) {}
+            try { scrim.remove(); } catch (e) {}
             resolve(t);
           };
           try {
