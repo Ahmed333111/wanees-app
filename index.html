@@ -59,9 +59,18 @@
           }
           host.innerHTML = '';
           var done = false;
-          var finish = function (t) { if (!done) { done = true; resolve(t); } };
+          var widgetId = null;
+          // Tear the widget down once we have an answer, otherwise its
+          // "Success!" badge keeps sitting on top of the app.
+          var finish = function (t) {
+            if (done) return;
+            done = true;
+            try { if (widgetId !== null) window.turnstile.remove(widgetId); } catch (e) {}
+            try { host.remove(); } catch (e) {}
+            resolve(t);
+          };
           try {
-            window.turnstile.render(host, {
+            widgetId = window.turnstile.render(host, {
               sitekey: siteKey,
               appearance: 'interaction-only',
               callback: finish,
